@@ -1,0 +1,14 @@
+bin/
+obj/
+publish/
+
+# Signing material - the private key never leaves this machine
+Imzalama.pfx
+PFX-PAROLA.txt
+
+.vs/
+*.user
+*.suo
+
+# Scratch output from running the tool on a real session
+*.compact.md

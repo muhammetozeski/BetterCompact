@@ -10,7 +10,7 @@ namespace BetterCompact;
 /// <param name="KeepCompactSummaries">Keep the summaries written when a session ran out of context.</param>
 /// <param name="KeepToolActivity">Keep the one-line tool count that stands between two messages.</param>
 /// <param name="KeepSystemReminders">Leave <c>&lt;system-reminder&gt;</c> blocks inside messages instead of removing them.</param>
-/// <param name="MaximumMessageKilobytes">Replace any single message larger than this with a line saying how big it was. Zero, the default, keeps every message whole however long it is.</param>
+/// <param name="MaximumMessageBytes">Cut any single message longer than this many bytes down to its opening, with a line at the end saying what was dropped. Zero, the default, keeps every message whole however long it is.</param>
 sealed record CompactOptions(
     string InputPath,
     string OutputPath = "",
@@ -19,7 +19,7 @@ sealed record CompactOptions(
     bool KeepCompactSummaries = false,
     bool KeepToolActivity = true,
     bool KeepSystemReminders = false,
-    int MaximumMessageKilobytes = 0);
+    int MaximumMessageBytes = 0);
 
 /// <summary>
 /// Turns the command line into <see cref="CompactOptions"/>, and holds the help text those options
@@ -46,7 +46,7 @@ static class CommandLine
         bool keepCompactSummaries = false;
         bool keepToolActivity = true;
         bool keepSystemReminders = false;
-        int maximumMessageKilobytes = 0;
+        int maximumMessageBytes = 0;
 
         for (int index = 0; index < arguments.Length; index++)
         {
@@ -74,9 +74,9 @@ static class CommandLine
                     break;
 
                 case "--max-message":
-                    if (index + 1 >= arguments.Length || !int.TryParse(arguments[index + 1], out maximumMessageKilobytes) || maximumMessageKilobytes < 1)
+                    if (index + 1 >= arguments.Length || !int.TryParse(arguments[index + 1], out maximumMessageBytes) || maximumMessageBytes < 1)
                     {
-                        error = $"'{argument}' needs a size in kilobytes after it, for example --max-message 200.";
+                        error = $"'{argument}' needs a size in bytes after it, for example --max-message 4096.";
                         return false;
                     }
                     index++;
@@ -118,7 +118,7 @@ static class CommandLine
             keepCompactSummaries,
             keepToolActivity,
             keepSystemReminders,
-            maximumMessageKilobytes);
+            maximumMessageBytes);
         return true;
     }
 
@@ -146,10 +146,10 @@ static class CommandLine
               --reminders       Leave <system-reminder> blocks inside messages.
               --no-tools        Drop the one-line tool counts between messages as well.
               --everything      All of the above except --no-tools.
-              --max-message <n> Replace any single message over n kilobytes with a line saying how big
-                                it was. Off by default, so a long message stays whole. Use it when
-                                somebody pasted a whole transcript into the prompt and that one message
-                                is now most of the output.
+              --max-message <n> Cut any single message longer than n BYTES down to its opening, with a
+                                line at the end naming what was dropped. Off by default, so a long
+                                message stays whole. Use it when somebody pasted a whole transcript
+                                into the prompt and that one message is now most of the output.
           -h, --help            This text.
 
         EXAMPLES:
@@ -157,7 +157,7 @@ static class CommandLine
           BetterCompact session.jsonl -o C:\Notes\conversation.md
           BetterCompact "%USERPROFILE%\.claude\projects\my-project" -o C:\Notes
           BetterCompact session.jsonl --everything
-          BetterCompact session.jsonl --max-message 200
+          BetterCompact session.jsonl --max-message 4096
 
         """);
 }

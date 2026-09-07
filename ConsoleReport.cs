@@ -48,7 +48,7 @@ static class ConsoleReport
         Console.WriteLine($"    attachments       {statistics.Attachments}");
 
         if (statistics.DuplicateEntries > 0) Console.WriteLine($"    repeated entries  {statistics.DuplicateEntries}");
-        if (statistics.OversizedMessages > 0) Console.WriteLine($"    over the limit    {statistics.OversizedMessages}");
+        if (statistics.OversizedMessages > 0) Console.WriteLine($"    cut for length    {statistics.OversizedMessages}");
         if (statistics.UnreadableLines > 0) Warning($"{statistics.UnreadableLines} lines were not valid JSON and were skipped.");
 
         double ratio = inputBytes == 0 ? 0 : (double)outputBytes / inputBytes * PercentageScale;

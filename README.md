@@ -76,14 +76,27 @@ BetterCompact                                           (interactive)
 | `--reminders` | Leave `<system-reminder>` blocks inside messages. |
 | `--no-tools` | Drop the tool-count lines as well. |
 | `--everything` | All of the above except `--no-tools`. |
-| `--max-message <n>` | Replace any single message over `n` kilobytes with a line saying how big it was. Off by default. |
+| `--max-message <n>` | Cut any single message longer than `n` **bytes** down to its opening. Off by default. |
 | `-h`, `--help` | Usage. |
 
 `--max-message` exists for one situation: somebody pasted a whole transcript into the prompt, so a
 single message is now most of the output. That message is real and the default keeps it, but a session
-like that compacts to 2.94 MB instead of the 160 KB everything else in it amounts to. The message is
-replaced outright rather than cut short — `[2.71 MB message left out: over the 200 KB limit]` — so a
-shortened message can never be mistaken for the real one, and the count at the end still reports it.
+like that compacts to 2.94 MB instead of the 160 KB everything else in it amounts to.
+
+The first 512 bytes are kept, so the message can still be recognised, and a line at the end names what
+went:
+
+```
+bu sohbetin tamamı burada:
+
+# ChaySocial Blazor web template
+...the first 512 bytes...
+
+[rest of a 2.71 MB message dropped: over the 4096 byte limit]
+```
+
+The opening is cut on a character boundary, never through the middle of one. The count at the end of
+the run reports how many messages this happened to.
 
 Session files live in `%USERPROFILE%\.claude\projects\<slugified-project-path>\`, one per session,
 named by session id. Passing that folder compacts every session in it, oldest first.

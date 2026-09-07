@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -38,6 +39,13 @@ sealed partial class TranscriptReader
     // The client stamps this on a message the user sent while quoting an earlier one. It is markup, not
     // something they typed.
     const string QuoteReplyMarker = "<!-- attach -->";
+
+    // How much of a message that broke the size limit is still written out, so it can be recognised.
+    const int OversizedMessageOpeningBytes = 512;
+
+    // A UTF-8 byte that continues the character before it looks like 10xxxxxx.
+    const int ContinuationByteMask = 0xC0;
+    const int ContinuationByteValue = 0x80;
 
     readonly CompactOptions options;
     readonly HashSet<string> seenEntryIds = [];
@@ -301,18 +309,34 @@ sealed partial class TranscriptReader
     /// Applies the size limit the caller set, if they set one.
     /// </summary>
     /// <param name="text">The message as it stood in the session file.</param>
-    /// <returns>The message unchanged, or a line stating how big it was when it went over the limit.
-    /// Nothing is ever half-kept: a message is either whole or replaced outright, so a shortened
-    /// message can never be mistaken for the real one.</returns>
+    /// <returns>The message unchanged, or its opening followed by a line naming what was dropped. The
+    /// line is what keeps a cut message from reading as a whole one.</returns>
     string WithinSizeLimit(string text)
     {
-        if (options.MaximumMessageKilobytes == 0) return text;
+        if (options.MaximumMessageBytes == 0) return text;
 
-        long byteCount = System.Text.Encoding.UTF8.GetByteCount(text);
-        if (byteCount <= (long)options.MaximumMessageKilobytes * ByteSize.BytesPerKilobyte) return text;
+        int byteCount = Encoding.UTF8.GetByteCount(text);
+        if (byteCount <= options.MaximumMessageBytes) return text;
 
         oversizedMessages++;
-        return $"[{ByteSize.Describe(byteCount)} message left out: over the {options.MaximumMessageKilobytes} KB limit]";
+        int openingBytes = Math.Min(OversizedMessageOpeningBytes, options.MaximumMessageBytes);
+        return $"{Opening(text, openingBytes)}\n\n[rest of a {ByteSize.Describe(byteCount)} message dropped: over the {options.MaximumMessageBytes} byte limit]";
+    }
+
+    /// <summary>
+    /// Takes the start of a message without splitting a character in half.
+    /// </summary>
+    /// <param name="text">The message to take the opening of.</param>
+    /// <param name="byteLimit">How many UTF-8 bytes to take at most.</param>
+    /// <returns>The longest opening that fits in the limit and still ends on a character boundary.</returns>
+    static string Opening(string text, int byteLimit)
+    {
+        byte[] utf8 = Encoding.UTF8.GetBytes(text);
+        if (utf8.Length <= byteLimit) return text;
+
+        int cut = byteLimit;
+        while (cut > 0 && (utf8[cut] & ContinuationByteMask) == ContinuationByteValue) cut--;
+        return Encoding.UTF8.GetString(utf8, 0, cut);
     }
 
     /// <summary>

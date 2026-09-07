@@ -56,6 +56,7 @@ sealed partial class TranscriptReader
     int toolCalls;
     int toolResults;
     int attachments;
+    int oversizedMessages;
     int pendingToolResults;
 
     string title = string.Empty;
@@ -94,7 +95,7 @@ sealed partial class TranscriptReader
         TranscriptStatistics statistics = new(
             totalLines, unreadableLines, duplicateEntries,
             userMessages, slashCommands, assistantMessages, thinkingBlocks,
-            injectedMessages, compactSummaries, toolCalls, toolResults, attachments);
+            injectedMessages, compactSummaries, toolCalls, toolResults, attachments, oversizedMessages);
 
         return new TranscriptDocument(title, sessionId, messages, statistics);
     }
@@ -293,7 +294,25 @@ sealed partial class TranscriptReader
     {
         if (text.Length == 0) return;
         FlushToolActivity();
-        messages.Add(new TranscriptMessage(kind, timestamp, text));
+        messages.Add(new TranscriptMessage(kind, timestamp, WithinSizeLimit(text)));
+    }
+
+    /// <summary>
+    /// Applies the size limit the caller set, if they set one.
+    /// </summary>
+    /// <param name="text">The message as it stood in the session file.</param>
+    /// <returns>The message unchanged, or a line stating how big it was when it went over the limit.
+    /// Nothing is ever half-kept: a message is either whole or replaced outright, so a shortened
+    /// message can never be mistaken for the real one.</returns>
+    string WithinSizeLimit(string text)
+    {
+        if (options.MaximumMessageKilobytes == 0) return text;
+
+        long byteCount = System.Text.Encoding.UTF8.GetByteCount(text);
+        if (byteCount <= (long)options.MaximumMessageKilobytes * ByteSize.BytesPerKilobyte) return text;
+
+        oversizedMessages++;
+        return $"[{ByteSize.Describe(byteCount)} message left out: over the {options.MaximumMessageKilobytes} KB limit]";
     }
 
     /// <summary>

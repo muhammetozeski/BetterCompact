@@ -76,7 +76,14 @@ BetterCompact                                           (interactive)
 | `--reminders` | Leave `<system-reminder>` blocks inside messages. |
 | `--no-tools` | Drop the tool-count lines as well. |
 | `--everything` | All of the above except `--no-tools`. |
+| `--max-message <n>` | Replace any single message over `n` kilobytes with a line saying how big it was. Off by default. |
 | `-h`, `--help` | Usage. |
+
+`--max-message` exists for one situation: somebody pasted a whole transcript into the prompt, so a
+single message is now most of the output. That message is real and the default keeps it, but a session
+like that compacts to 2.94 MB instead of the 160 KB everything else in it amounts to. The message is
+replaced outright rather than cut short — `[2.71 MB message left out: over the 200 KB limit]` — so a
+shortened message can never be mistaken for the real one, and the count at the end still reports it.
 
 Session files live in `%USERPROFILE%\.claude\projects\<slugified-project-path>\`, one per session,
 named by session id. Passing that folder compacts every session in it, oldest first.
@@ -149,6 +156,7 @@ TranscriptMessage.cs   What a kept message is, and the counts behind a run
 TranscriptReader.cs    Reads the .jsonl and decides what each entry is
 MarkdownComposer.cs    Lays the result out as Markdown
 ConsoleReport.cs       Everything the program prints
+ByteSize.cs            Byte counts written the way a person reads them
 ```
 
 ## Licence

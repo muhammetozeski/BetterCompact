@@ -8,8 +8,6 @@ namespace BetterCompact;
 /// </summary>
 static class ConsoleReport
 {
-    const int KilobyteThreshold = 1024;
-    const int MegabyteThreshold = 1024 * 1024;
     const int PercentageScale = 100;
 
     /// <summary>Writes a step the program is taking.</summary>
@@ -50,24 +48,13 @@ static class ConsoleReport
         Console.WriteLine($"    attachments       {statistics.Attachments}");
 
         if (statistics.DuplicateEntries > 0) Console.WriteLine($"    repeated entries  {statistics.DuplicateEntries}");
+        if (statistics.OversizedMessages > 0) Console.WriteLine($"    over the limit    {statistics.OversizedMessages}");
         if (statistics.UnreadableLines > 0) Warning($"{statistics.UnreadableLines} lines were not valid JSON and were skipped.");
 
         double ratio = inputBytes == 0 ? 0 : (double)outputBytes / inputBytes * PercentageScale;
         Console.WriteLine();
-        Success($"{Size(inputBytes)} -> {Size(outputBytes)}  ({ratio.ToString("0.#", CultureInfo.InvariantCulture)}% of the original)");
+        Success($"{ByteSize.Describe(inputBytes)} -> {ByteSize.Describe(outputBytes)}  ({ratio.ToString("0.#", CultureInfo.InvariantCulture)}% of the original)");
     }
-
-    /// <summary>
-    /// Turns a byte count into the shortest unit that still reads clearly.
-    /// </summary>
-    /// <param name="bytes">The size to write.</param>
-    /// <returns>The size with its unit, for example <c>197 KB</c>.</returns>
-    public static string Size(long bytes) => bytes switch
-    {
-        >= MegabyteThreshold => $"{(double)bytes / MegabyteThreshold:0.##} MB",
-        >= KilobyteThreshold => $"{bytes / KilobyteThreshold} KB",
-        _ => $"{bytes} B"
-    };
 
     static void Write(string prefix, ConsoleColor colour, string message)
     {

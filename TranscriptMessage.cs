@@ -53,6 +53,7 @@ sealed record TranscriptMessage(MessageKind Kind, DateTimeOffset? Timestamp, str
 /// <param name="ToolCalls">Tool invocations the assistant made.</param>
 /// <param name="ToolResults">Tool outputs that came back.</param>
 /// <param name="Attachments">Attachment entries, which hold no conversation text.</param>
+/// <param name="OversizedMessages">Messages replaced by a line stating their size because they were over the limit the caller set.</param>
 sealed record TranscriptStatistics(
     int TotalLines,
     int UnreadableLines,
@@ -65,7 +66,8 @@ sealed record TranscriptStatistics(
     int CompactSummaries,
     int ToolCalls,
     int ToolResults,
-    int Attachments);
+    int Attachments,
+    int OversizedMessages);
 
 /// <summary>
 /// A whole session file after reading: what it was called, what it contained, and what was in it.

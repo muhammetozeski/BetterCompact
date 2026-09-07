@@ -40,9 +40,6 @@ sealed partial class TranscriptReader
     // something they typed.
     const string QuoteReplyMarker = "<!-- attach -->";
 
-    // How much of a message that broke the size limit is still written out, so it can be recognised.
-    const int OversizedMessageOpeningBytes = 512;
-
     // A UTF-8 byte that continues the character before it looks like 10xxxxxx.
     const int ContinuationByteMask = 0xC0;
     const int ContinuationByteValue = 0x80;
@@ -319,8 +316,9 @@ sealed partial class TranscriptReader
         if (byteCount <= options.MaximumMessageBytes) return text;
 
         oversizedMessages++;
-        int openingBytes = Math.Min(OversizedMessageOpeningBytes, options.MaximumMessageBytes);
-        return $"{Opening(text, openingBytes)}\n\n[rest of a {ByteSize.Describe(byteCount)} message dropped: over the {options.MaximumMessageBytes} byte limit]";
+        int openingBytes = Math.Min(options.OpeningBytes, options.MaximumMessageBytes);
+        string dropped = $"[rest of a {ByteSize.Describe(byteCount)} message dropped: over the {options.MaximumMessageBytes} byte limit]";
+        return openingBytes == 0 ? dropped : $"{Opening(text, openingBytes)}\n\n{dropped}";
     }
 
     /// <summary>

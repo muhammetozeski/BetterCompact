@@ -77,6 +77,7 @@ BetterCompact                                           (interactive)
 | `--no-tools` | Drop the tool-count lines as well. |
 | `--everything` | All of the above except `--no-tools`. |
 | `--max-message <n>` | Cut any single message longer than `n` **bytes** down to its opening. Off by default. |
+| `--keep-opening <n>` | How much of a cut message to still write out, in bytes. Default 512; `0` keeps only the line. |
 | `-h`, `--help` | Usage. |
 
 `--max-message` exists for one situation: somebody pasted a whole transcript into the prompt, so a
@@ -84,7 +85,7 @@ single message is now most of the output. That message is real and the default k
 like that compacts to 2.94 MB instead of the 160 KB everything else in it amounts to.
 
 The first 512 bytes are kept, so the message can still be recognised, and a line at the end names what
-went:
+went. That 512 is `--keep-opening`, not a fixed rule:
 
 ```
 bu sohbetin tamamı burada:

@@ -11,6 +11,7 @@ namespace BetterCompact;
 /// <param name="KeepToolActivity">Keep the one-line tool count that stands between two messages.</param>
 /// <param name="KeepSystemReminders">Leave <c>&lt;system-reminder&gt;</c> blocks inside messages instead of removing them.</param>
 /// <param name="MaximumMessageBytes">Cut any single message longer than this many bytes down to its opening, with a line at the end saying what was dropped. Zero, the default, keeps every message whole however long it is.</param>
+/// <param name="OpeningBytes">How much of a cut message is still written out, so it can be recognised. Never more than <paramref name="MaximumMessageBytes"/>, since keeping more than the limit would defeat it.</param>
 sealed record CompactOptions(
     string InputPath,
     string OutputPath = "",
@@ -19,7 +20,12 @@ sealed record CompactOptions(
     bool KeepCompactSummaries = false,
     bool KeepToolActivity = true,
     bool KeepSystemReminders = false,
-    int MaximumMessageBytes = 0);
+    int MaximumMessageBytes = 0,
+    int OpeningBytes = CompactOptions.DefaultOpeningBytes)
+{
+    /// <summary>Enough of a message to tell which one it was, without carrying its bulk.</summary>
+    public const int DefaultOpeningBytes = 512;
+}
 
 /// <summary>
 /// Turns the command line into <see cref="CompactOptions"/>, and holds the help text those options
@@ -47,6 +53,7 @@ static class CommandLine
         bool keepToolActivity = true;
         bool keepSystemReminders = false;
         int maximumMessageBytes = 0;
+        int openingBytes = CompactOptions.DefaultOpeningBytes;
 
         for (int index = 0; index < arguments.Length; index++)
         {
@@ -77,6 +84,15 @@ static class CommandLine
                     if (index + 1 >= arguments.Length || !int.TryParse(arguments[index + 1], out maximumMessageBytes) || maximumMessageBytes < 1)
                     {
                         error = $"'{argument}' needs a size in bytes after it, for example --max-message 4096.";
+                        return false;
+                    }
+                    index++;
+                    break;
+
+                case "--keep-opening":
+                    if (index + 1 >= arguments.Length || !int.TryParse(arguments[index + 1], out openingBytes) || openingBytes < 0)
+                    {
+                        error = $"'{argument}' needs a size in bytes after it, for example --keep-opening 512.";
                         return false;
                     }
                     index++;
@@ -118,7 +134,8 @@ static class CommandLine
             keepCompactSummaries,
             keepToolActivity,
             keepSystemReminders,
-            maximumMessageBytes);
+            maximumMessageBytes,
+            openingBytes);
         return true;
     }
 
@@ -150,6 +167,10 @@ static class CommandLine
                                 line at the end naming what was dropped. Off by default, so a long
                                 message stays whole. Use it when somebody pasted a whole transcript
                                 into the prompt and that one message is now most of the output.
+              --keep-opening <n>
+                                How much of a cut message is still written out, in bytes. Default 512.
+                                Zero writes only the line naming what was dropped. Never more than
+                                --max-message, since keeping more than the limit would defeat it.
           -h, --help            This text.
 
         EXAMPLES:

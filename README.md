@@ -10,9 +10,9 @@ BetterCompact exports AI agent conversations into clean, compact Markdown transc
 
 | Tool | Target Harness | Aliases | Default Output Behavior |
 | --- | --- | --- | --- |
-| `BetterCompactAntigravity.exe` | Antigravity (Gemini) | `BetterCompactGemini` | Auto-splits at 44 KB / 700 lines when needed |
-| `BetterCompactClaudeCode.exe` | Claude Code (Claude) | `BetterCompactClaude` | Single Markdown file |
-| `BetterCompactCodex.exe` | Codex (ChatGPT / GPT) | `BetterCompactGPT`, `BetterCompactChatGPT` | Single Markdown file |
+| `BetterCompactAntigravity.exe` | Antigravity (Gemini) | `BetterCompactGemini` | Single Markdown file (`--split` for 44 KB / 700 lines) |
+| `BetterCompactClaudeCode.exe` | Claude Code (Claude) | `BetterCompactClaude` | Single Markdown file (`--split` for 44 KB / 700 lines) |
+| `BetterCompactCodex.exe` | Codex (ChatGPT / GPT) | `BetterCompactGPT`, `BetterCompactChatGPT` | Single Markdown file (`--split` for 44 KB / 700 lines) |
 
 ## Features
 

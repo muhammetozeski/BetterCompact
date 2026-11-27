@@ -119,29 +119,14 @@ public static class MarkdownComposer
                 FlushBucket();
             }
 
-            if (blockBytes <= CurrentByteBudget() && blockLines <= CurrentLineBudget())
+            // Never split a message block in half: even if a single block exceeds the soft target, keep it intact.
+            currentBucket.Add(block);
+            currentBytes += blockBytes;
+            currentLines += blockLines;
+
+            if (currentBytes >= CurrentByteBudget() || currentLines >= CurrentLineBudget())
             {
-                currentBucket.Add(block);
-                currentBytes += blockBytes;
-                currentLines += blockLines;
-            }
-            else
-            {
-                // Oversized single block: split cleanly along line boundaries while keeping code fences balanced.
-                foreach (RenderedBlock piece in SplitOversizedBlock(block, CurrentByteBudget(), CurrentLineBudget()))
-                {
-                    int pieceBytes = Utf8NoBom.GetByteCount(piece.Content.ReplaceLineEndings("\r\n"));
-                    int pieceLines = CountLines(piece.Content);
-                    if (currentBucket.Count > 0 &&
-                        (currentBytes + pieceBytes > CurrentByteBudget() || currentLines + pieceLines > CurrentLineBudget()))
-                    {
-                        FlushBucket();
-                    }
-                    currentBucket.Add(piece);
-                    currentBytes += pieceBytes;
-                    currentLines += pieceLines;
-                    FlushBucket();
-                }
+                FlushBucket();
             }
         }
 
@@ -176,58 +161,6 @@ public static class MarkdownComposer
         }
 
         return result;
-    }
-
-    static IEnumerable<RenderedBlock> SplitOversizedBlock(RenderedBlock block, int maxBytes, int maxLines)
-    {
-        string[] lines = block.Content.ReplaceLineEndings("\n").Split('\n');
-        StringBuilder current = new();
-        int currentBytes = 0;
-        int currentLines = 0;
-        string? openFence = null;
-
-        int safeByteLimit = Math.Max(2048, maxBytes - 128);
-        int safeLineLimit = Math.Max(20, maxLines - 6);
-
-        foreach (string rawLine in lines)
-        {
-            string line = rawLine;
-            int lineBytes = Utf8NoBom.GetByteCount(line) + 2;
-
-            if (currentLines > 0 && (currentBytes + lineBytes > safeByteLimit || currentLines + 1 > safeLineLimit))
-            {
-                if (openFence != null) current.AppendLine("```");
-                current.AppendLine();
-                yield return new RenderedBlock(current.ToString(), block.MessageTag);
-
-                current.Clear();
-                currentBytes = 0;
-                currentLines = 0;
-                if (openFence != null)
-                {
-                    current.AppendLine(openFence);
-                    currentBytes += Utf8NoBom.GetByteCount(openFence) + 2;
-                    currentLines++;
-                }
-            }
-
-            // Track fenced code blocks so splits stay valid Markdown.
-            string trimmed = line.TrimStart();
-            if (trimmed.StartsWith("```", StringComparison.Ordinal))
-            {
-                openFence = openFence == null ? trimmed : null;
-            }
-
-            current.AppendLine(line);
-            currentBytes += lineBytes;
-            currentLines++;
-        }
-
-        if (current.Length > 0)
-        {
-            if (openFence != null) current.AppendLine("```");
-            yield return new RenderedBlock(current.ToString(), block.MessageTag);
-        }
     }
 
     static List<RenderedBlock> RenderBodyBlocks(CompactDocument document, CommonOptions options)

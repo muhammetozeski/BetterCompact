@@ -24,11 +24,11 @@ static class Program
                     "BetterCompactAntigravity.exe",
                     "Antigravity / Gemini",
                     "Antigravity sohbet UUID'si veya .db dosya yolu",
-                    splitsByDefault: true);
+                    splitsByDefault: false);
                 return ExitSuccess;
             }
 
-            if (!CommonCommandLine.TryParse(arguments, defaultSplitOutput: true, out CommonOptions? options, out string error, out bool showHelp))
+            if (!CommonCommandLine.TryParse(arguments, defaultSplitOutput: false, out CommonOptions? options, out string error, out bool showHelp))
             {
                 if (showHelp)
                 {
@@ -36,7 +36,7 @@ static class Program
                         "BetterCompactAntigravity.exe",
                         "Antigravity / Gemini",
                         "Antigravity sohbet UUID'si veya .db dosya yolu",
-                        splitsByDefault: true);
+                        splitsByDefault: false);
                     return ExitSuccess;
                 }
                 ConsoleReport.Error(error);

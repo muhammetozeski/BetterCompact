@@ -8,7 +8,7 @@
     <LangVersion>14</LangVersion>
     <AssemblyName>BetterCompactClaudeCode</AssemblyName>
     <RootNamespace>BetterCompactClaudeCode</RootNamespace>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>

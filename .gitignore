@@ -1,0 +1,9 @@
+bin/
+obj/
+publish/
+.vs/
+*.user
+*.suo
+*.pdb
+Imzalama.pfx
+PFX-PAROLA.txt

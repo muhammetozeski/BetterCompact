@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BetterCompactCore/BetterCompactCore.csproj" />
+  <Project Path="BetterCompactAntigravity/BetterCompactAntigravity.csproj" />
+  <Project Path="BetterCompactClaudeCode/BetterCompactClaudeCode.csproj" />
+  <Project Path="BetterCompactCodex/BetterCompactCodex.csproj" />
+</Solution>

@@ -18,7 +18,7 @@ BetterCompact exports AI agent conversations into clean, compact Markdown transc
 
 - **Standardized Metadata Header:** Session UUID, title, harness, primary model & effort, model family, multi-model shares, working directory, start/end duration, context fill, billing token totals (excluding cache hits), cache hit ratio, message/exclusion counts, top used tools, size reduction, and source paths.
 - **Standardized File Naming:** `HarnessName_Model_SessionTitle.md` (with `_1.md`, `_2.md`, ... suffixes only when split).
-- **Optional Table of Contents (`--toc`):** Adds an `İçindekiler` block at the top and labels messages sequentially (`k1`, `a1`, `k2`, `a2`, ...).
+- **Optional Table of Contents (`--Contents`):** Adds an `İçindekiler` block at the top and labels messages sequentially (`k1`, `a1`, `k2`, `a2`, ...).
 - **Collapsible Reasoning (`--reasoning` / `--thinking`):** Renders model thinking/reasoning blocks inside `<details>` blocks with line and size summaries.
 - **Session Discovery:** `--list [count]` and `--find <query>` to list or search sessions by title across each harness.
 - **Clean Single-File Executables:** No sidecar DLLs or config files; rotating diagnostic logs are stored under `%TEMP%\BetterCompact\<ToolName>\Logs`.
@@ -32,7 +32,7 @@ BetterCompactClaudeCode.exe <session-uuid-or-jsonl>
 BetterCompactCodex.exe <session-uuid-or-jsonl>
 
 # Optional flags
-BetterCompactAntigravity.exe <uuid> --toc --reasoning --output "<folder>"
+BetterCompactAntigravity.exe <uuid> --Contents --reasoning --output "<folder>"
 BetterCompactCodex.exe --list 10
 BetterCompactClaudeCode.exe --find "MyProject"
 ```

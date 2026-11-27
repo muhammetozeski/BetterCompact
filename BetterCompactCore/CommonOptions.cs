@@ -84,7 +84,8 @@ public static class CommonCommandLine
                     }
                     break;
 
-                case "--toc":
+                case "--Contents":
+                case "--contents":
                 case "--icindekiler":
                 case "--fihrist":
                     includeToc = true;
@@ -121,10 +122,6 @@ public static class CommonCommandLine
 
                 case "--split":
                     splitOutput = true;
-                    break;
-
-                case "--no-split":
-                    splitOutput = false;
                     break;
 
                 case "--max-part-kb":
@@ -238,7 +235,7 @@ public static class CommonCommandLine
         sb.AppendLine();
         sb.AppendLine("Seçenekler:");
         sb.AppendLine("  -o, --output <klasör|dosya>   Çıktı hedefi (varsayılan: NewTemp klasörü)");
-        sb.AppendLine("  --toc                         Başa İçindekiler şablonu ekler, mesajları k1/a1 numaralar");
+        sb.AppendLine("  --Contents                    Başa İçindekiler şablonu ekler, mesajları k1/a1 numaralar");
         sb.AppendLine("  --reasoning, --thinking       Düşünme/akıl yürütme bloklarını katlanabilir ekler");
         sb.AppendLine("  --injected                    Sistem/enjekte blokları dahil eder");
         sb.AppendLine("  --summaries                   Eski sıkıştırma özetlerini dahil eder");
@@ -246,9 +243,7 @@ public static class CommonCommandLine
         sb.AppendLine("  --no-tools                    Araç çağrısı özet satırlarını gizler");
         sb.AppendLine("  --max-message <bayt>          Mesaj boyut sınırı (varsayılan: 65536, 0 = sınırsız)");
         sb.AppendLine("  --keep-opening <bayt>         Kırpılan mesajdan korunacak başlangıç (varsayılan: 512)");
-        sb.AppendLine(splitsByDefault
-            ? "  --no-split                    44 KB / 700 satır bölmeyi kapatır"
-            : "  --split                       Çıktıyı 44 KB / 700 satır parçalara böler");
+        sb.AppendLine("  --split                       Çıktıyı 44 KB / 700 satır parçalara böler");
         Console.Write(sb.ToString());
     }
 
